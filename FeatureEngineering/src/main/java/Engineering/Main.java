@@ -6,12 +6,7 @@ import weka.core.Instance;
 import weka.core.Instances;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Scanner;
-
-
+import java.util.*;
 
 
 /**
@@ -23,6 +18,7 @@ public class Main {
     private LinkedHashSet<String> words = new LinkedHashSet<>();
     private ArrayList<String> positive = new ArrayList<>();
     private String inputPath,outputPath;
+    private Normalising normalising = new Normalising();
 
     public Main(String inputPath,String outputPath){
         this.inputPath =inputPath;
@@ -51,16 +47,26 @@ public class Main {
 
     HashSet<String> getwords(String tweets){
         String[] split = tweets.split("\t");
-        String content = split[3].replaceAll("[^a-zA-Z0-9 ]","");
+        String content = split[3].replaceAll("[^a-zA-Z0-9 ]", "");
 
         String[] w= content.split(" ");
+
+
 
         HashSet<String> words = new HashSet<>();
         for(String s : w) {
             if (s.equals("")) continue;
+
             PorterStem stemmer = new PorterStem();
-            stemmer.add(s);
+            String normedWord = normalising.nomalising(s.toLowerCase());
+            if(normedWord == null){
+                System.out.println(s);
+                break;
+            }
+            stemmer.add(normedWord);
             stemmer.stem();
+//            String stemmedWord = stemmer.toString();
+
             words.add(stemmer.toString());
         }
         this.positive.add(split[2]);
@@ -120,4 +126,8 @@ public class Main {
         }
 
     }
+
+
+
+
 }
