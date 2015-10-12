@@ -40,8 +40,6 @@ public class Normalising {
     }
 
     public String nomalising(String word){
-//        String nomalisedWord = null;
-//        String caseFolded = word.toLowerCase();
         String handledWord = handleWord(word);
         if(pairs.containsKey(handledWord)) {
             String nomalisedWord = pairs.get(handledWord);
@@ -50,7 +48,6 @@ public class Normalising {
         else {
             return word;
         }
-//        return nomalisedWord;
     }
 
     private String handleWord(String word){
@@ -69,12 +66,5 @@ public class Normalising {
         return handledWord.toString();
     }
 
-//    public static void main(String[] args) {
-//        while (true){
-//            Scanner scanner = new Scanner(System.in);
-//            String s = scanner.nextLine();
-//            Normalising normalising = new Normalising();
-//            System.out.println(normalising.nomalising(s));
-//        }
-//    }
+
 }

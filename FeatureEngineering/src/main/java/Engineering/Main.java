@@ -45,8 +45,6 @@ public class Main {
         String trainArff = bean.arffPath;
 
         Main main = new Main(inPath, outPath);
-//        Main main = new Main(args[0], args[1]);
-//        String trainArff = args[2];
         Scanner inputStream = null;
         try {
             inputStream = new Scanner(new File(main.inputPath));
