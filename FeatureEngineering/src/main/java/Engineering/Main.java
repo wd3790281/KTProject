@@ -4,6 +4,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.BayesianLogisticRegression;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.bayes.NaiveBayesMultinomial;
 import weka.classifiers.rules.ZeroR;
@@ -264,6 +265,9 @@ public class Main {
                 break;
             case "NB":
                 classifier = new NaiveBayes();
+                break;
+            case "BLR":
+                classifier = new BayesianLogisticRegression();
                 break;
             case "0R":
                 classifier = new ZeroR();
