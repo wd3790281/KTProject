@@ -307,7 +307,7 @@ public class Main {
             }
         }
 //        outputArff(labeled.toString());
-        System.out.println(result.toString());
+//        System.out.println(result.toString());
         PrintWriter writer = null;
         try {
             writer = new PrintWriter(
