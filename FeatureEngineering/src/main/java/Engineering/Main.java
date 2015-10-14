@@ -2,6 +2,13 @@ package Engineering;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import weka.classifiers.Classifier;
+import weka.classifiers.bayes.BayesNet;
+import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.bayes.NaiveBayesMultinomial;
+import weka.classifiers.rules.ZeroR;
+import weka.classifiers.trees.DecisionStump;
+import weka.classifiers.trees.RandomForest;
 import weka.classifiers.trees.RandomTree;
 import weka.core.Attribute;
 import weka.core.FastVector;
@@ -23,6 +30,7 @@ public class Main {
     private ArrayList<String> Id = new ArrayList<>();
     private String inputPath,outputPath;
     private Normalising normalising = new Normalising();
+    private String classifierChoice;
 
     public Main(String inputPath,String outputPath){
         this.inputPath =inputPath;
@@ -47,7 +55,11 @@ public class Main {
         String trainArff = bean.arffPath;
         String model = bean.builtModel;
 
+
         Main main = new Main(inPath, outPath);
+
+        main.classifierChoice = bean.classifier;
+
         Scanner inputStream = null;
         try {
             inputStream = new Scanner(new File(main.inputPath));
@@ -245,9 +257,34 @@ public class Main {
         unlabeled.setClassIndex(trained.numAttributes()-1);
         trained.setClassIndex(trained.numAttributes()-1);
 
-        RandomTree tree = new RandomTree();
+        Classifier classifier = null;
+        switch (this.classifierChoice){
+            case "RT":
+                classifier = new RandomTree();
+                break;
+            case "NB":
+                classifier = new NaiveBayes();
+                break;
+            case "0R":
+                classifier = new ZeroR();
+                break;
+            case "NBM":
+                classifier = new NaiveBayesMultinomial();
+                break;
+            case "RF":
+                classifier = new RandomForest();
+                break;
+            case "DS":
+                classifier = new DecisionStump();
+                break;
+            case "BN":
+                classifier = new BayesNet();
+            default:
+                break;
+        }
+//        RandomTree classifier = new RandomTree();
         try {
-            tree.buildClassifier(trained);
+            classifier.buildClassifier(trained);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -257,7 +294,7 @@ public class Main {
         for(int i = 0; i<unlabeled.numInstances(); i++) {
 
             try {
-                double classValue = tree.classifyInstance(unlabeled.instance(i));
+                double classValue = classifier.classifyInstance(unlabeled.instance(i));
                 labeled.instance(i).setClassValue(classValue);
                 if(labeled.instance(i).classValue() == 0.0){
                     result.add(this.Id.get(i) + ",Y");

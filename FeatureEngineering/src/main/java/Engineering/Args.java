@@ -19,4 +19,8 @@ public class Args {
 
     @Option(name = "-m", usage = "select built dev.arff or test.arff")
     public String builtModel = "dev";
+
+    @Option(name = "-c", usage = "select classifier")
+    public String classifier = "NB";
+
 }
