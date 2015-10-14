@@ -252,15 +252,38 @@ public class Main {
             e.printStackTrace();
         }
         Instances labeled = new Instances(unlabeled);
-        for(int i = 0; i<unlabeled.numInstances(); i++){
+        ArrayList<String> result = new ArrayList<>();
+        result.add("ID,Category");
+        for(int i = 0; i<unlabeled.numInstances(); i++) {
+
             try {
                 double classValue = tree.classifyInstance(unlabeled.instance(i));
                 labeled.instance(i).setClassValue(classValue);
+                if(labeled.instance(i).classValue() == 0.0){
+                    result.add(this.Id.get(i) + ",Y");
+                }else{
+                    result.add(this.Id.get(i) + ",N");
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        outputArff(labeled.toString());
+//        outputArff(labeled.toString());
+        System.out.println(result.toString());
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(
+                    new FileWriter(this.outputPath));
+            for(String s : result){
+                writer.println(s);
+            }
+//            writer.write();
+//            writer.flush();
+            writer.close();
+        }  catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
