@@ -2,6 +2,7 @@ package Engineering;
 
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import weka.classifiers.trees.RandomTree;
 import weka.core.Attribute;
 import weka.core.FastVector;
 import weka.core.Instance;
@@ -19,6 +20,7 @@ public class Main {
     private LinkedHashSet<String> tweets = new LinkedHashSet<>();
     private LinkedHashSet<String> words = new LinkedHashSet<>();
     private ArrayList<String> positive = new ArrayList<>();
+    private ArrayList<String> Id = new ArrayList<>();
     private String inputPath,outputPath;
     private Normalising normalising = new Normalising();
 
@@ -43,6 +45,7 @@ public class Main {
         String inPath = bean.inPath;
         String outPath = bean.outPath;
         String trainArff = bean.arffPath;
+        String model = bean.builtModel;
 
         Main main = new Main(inPath, outPath);
         Scanner inputStream = null;
@@ -59,8 +62,13 @@ public class Main {
             main.words.addAll(main.getwords(s));
         }
 
-        if( trainArff != null)
-            main.outputDevArff(trainArff);
+        if( trainArff != null) {
+            if(model.equals("dev")) {
+                main.outputDevArff(trainArff);
+            }else {
+                main.outputTestArff(trainArff);
+            }
+        }
         else
             main.outputTrainArff();
 
@@ -68,7 +76,7 @@ public class Main {
 
     HashSet<String> getwords(String tweets){
         String[] split = tweets.split("\t");
-        String content = split[3].replaceAll("[^a-zA-Z0-9 ]", "");
+        String content = split[3].replaceAll("[^a-zA-Z ]", "");
 
         String[] w= content.split(" ");
 
@@ -85,6 +93,7 @@ public class Main {
             words.add(stemmer.toString());
         }
         this.positive.add(split[2]);
+        this.Id.add(split[0]);
 
         return words;
     }
@@ -102,6 +111,7 @@ public class Main {
         }
 
     }
+
     void outputTrainArff(){
 
         FastVector atts = new FastVector();
@@ -136,6 +146,8 @@ public class Main {
                 vals[j] = cls.indexOf("N");
 
             }
+
+
             i++;
             data.add(new Instance(1.0, vals));
         }
@@ -158,7 +170,6 @@ public class Main {
             cls.addElement("N");
             atts.addElement(new Attribute("ADR", cls));
 
-
             Instances data = new Instances("Tweets",atts,0);
             int i = 0;
             for(String tweet:this.tweets){
@@ -171,7 +182,6 @@ public class Main {
                         vals[j] = 1;
                     }else {
                         vals[j] = 0;
-                        System.out.println(split[1]);
                     }
                 }
                 if(this.positive.get(i).equals("1")){
@@ -188,6 +198,70 @@ public class Main {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    void outputTestArff(String arffPath){
+        try {
+            DataSource source = new DataSource(arffPath);
+            Instances trainedData = source.getDataSet();
+
+            FastVector atts = new FastVector();
+            for(int i = 0; i<trainedData.numAttributes()-1;i++){
+                atts.addElement(trainedData.attribute(i));
+            }
+            FastVector cls = new FastVector();
+            cls.addElement("Y");
+            cls.addElement("N");
+            atts.addElement(new Attribute("ADR", cls));
+
+            Instances data = new Instances("Tweets",atts,0);
+            int i = 0;
+            for(String tweet:this.tweets){
+                int j = 0;
+                double[] vals = new double[trainedData.numAttributes()];
+                HashSet<String> wordsOfTweet = this.getwords(tweet);
+                for(;j<data.numAttributes()-1;j++){
+                    String[] split = atts.elementAt(j).toString().split(" ");
+                    if(wordsOfTweet.contains(split[1])){
+                        vals[j] = 1;
+                    }else {
+                        vals[j] = 0;
+                    }
+                }
+
+                vals[j] = cls.indexOf("N");
+
+                i++;
+                data.add(new Instance(1.0, vals));
+            }
+//            outputArff(data.toString());
+
+            label(data, trainedData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    void label(Instances unlabeled, Instances trained){
+        unlabeled.setClassIndex(trained.numAttributes()-1);
+        trained.setClassIndex(trained.numAttributes()-1);
+
+        RandomTree tree = new RandomTree();
+        try {
+            tree.buildClassifier(trained);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Instances labeled = new Instances(unlabeled);
+        for(int i = 0; i<unlabeled.numInstances(); i++){
+            try {
+                double classValue = tree.classifyInstance(unlabeled.instance(i));
+                labeled.instance(i).setClassValue(classValue);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        outputArff(labeled.toString());
+
     }
 
 }

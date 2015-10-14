@@ -16,4 +16,7 @@ public class Args {
 
     @Option(name = "--trained", usage = "Input the trained dataset in arff")
     public String arffPath;
+
+    @Option(name = "-m", usage = "select built dev.arff or test.arff")
+    public String builtModel = "dev";
 }
